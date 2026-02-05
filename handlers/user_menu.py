@@ -2,6 +2,8 @@ from aiogram import Router, F
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 
+import os
+
 from lexicon.lexicon_ru import LEXICON_RU
 from keyboards.main_menu import get_main_menu
 
@@ -18,21 +20,28 @@ async def process_start_command(message: Message):
         "Я официальный чат-бот частного юриста Лобарева Дмитрия Сергеевича.\n"
         "Для продолжения работы необходимо ознакомиться с Политикой обработки персональных данных."
     )
-    
+        # Try to send photo if exists
     try:
-        import os
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        project_root = os.path.dirname(current_dir)
+        # 1. Получаем папку, из которой запущен бот (это и есть корень проекта)
+        project_root = os.getcwd()
+        
+        # 2. Собираем полный путь к картинке
         photo_path = os.path.join(project_root, "lawyer_avatar.png")
         
+        # 3. Для проверки выводим путь в консоль (черное окошко)
+        print(f"📸 Ищу фото тут: {photo_path}")
+        
+        # 4. Создаем файл для отправки
         photo = FSInputFile(photo_path)
+        
         await message.answer_photo(
             photo=photo,
             caption=text,
             reply_markup=get_policy_kb()
         )
     except Exception as e:
-        print(f"Error loading photo: {e}")
+        # Если что-то пошло не так, пишем ошибку в консоль и шлем просто текст
+        print(f"❌ Ошибка загрузки фото: {e}") 
         await message.answer(
             text=text,
             reply_markup=get_policy_kb()
